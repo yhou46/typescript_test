@@ -1,0 +1,206 @@
+# Set up typescript environment
+1. Install node js
+On mac, use: brew install node
+
+2. Install typescript using npm. (npm should be already installed with node js)
+npm 
+
+# Questions and Tips:
+1. Eslint vs Tslint?
+Tslint is deprecated. Use Eslint.
+
+
+2. commond js vs Javascript modules
+CommonJs: created by node js;
+module.exports is specific to node js;
+Not natively understood by browsers; it requires either a loader library or some transpiling;
+
+ES2015...
+
+3. package-lock.json?
+package-lock.json is automatically generated for any operations where npm modifies either the node_modules tree, or package.json. It describes the exact tree that was generated, such that subsequent installs are able to generate identical trees, regardless of intermediate dependency updates.
+
+This file is intended to be committed into source repositories, and serves various purposes...
+References: https://docs.npmjs.com/cli/v7/configuring-npm/package-lock-json
+
+
+4. In typescript/javascript, there is big int type: created by appending n to the end of an integer literal
+let bigNumber: bigint = 100n;
+
+5. JavaScript is generally structurally typed: A style of programming where you just care that an object has certain properties, and not what its name is (nominal typing). Also called duck typing in some languages
+
+example:
+class Zebra 
+{ 
+    trot() 
+    {
+        // ...
+    }
+}
+
+class Poodle
+{
+    trot()
+    {
+        // ...
+    }
+}
+function ambleAround(animal: Zebra)
+{
+    animal.trot()
+}
+let zebra = new Zebra;
+let poodle = new Poodle;
+ambleAround(zebra); // OK
+ambleAround(poodle); // OK
+
+All that matters is that both implement the function called trot
+
+The exception to this rule is classes with private or protected fields: when checking whether or not a shape is assignable to a class, if the class has any private or pro tected fields and the shape is not an instance of that class or a subclass of that class, then the shape is not assignable to the class
+
+TypeScript’s type system is structural, not nominal. The relationships between types are determined by the properties they contain, not whether they were declared with some particular relationship.
+
+6. Typescript allow string + number unless enable some special checks
+like "Hello" + 10 is correct.
+
+7. Logical operator can be applied to other types like string
+"hello" && 11 is allowed.
+
+Logical And (&&): Starting from left and moving to the right, return the first operand that is falsy. If no falsy operand was found, return the latest operand.
+
+Logical Or (||): Starting from left and moving to the right, return the first operand that is truthy. If no truthy operand was found, return the latest operand.
+
+8. Rest parameters/arguments:
+// A list of strings with at least 1 element
+let friends: [string, ...string[]] = ['Sara', 'Tali', 'Chloe', 'Claire']
+
+function sumVariadicSafe(...numbers: number[]): number { return numbers.reduce((total, n) => total + n, 0)
+}
+sumVariadicSafe(1, 2, 3) // evaluates to 6
+
+9. Define function type:
+type Log = (message: string, userId?: string) => void
+Then Log is a function that takes string as 1st arg and other strings as optional arg and return nothing
+
+10. Javascript does NOT support function overload: one function name must have one implementation. If not, the older one will be replaced by new one.
+
+11. Generic functions: where <Type> appears matters
+type Filter = 
+{
+    <T>(array: T[], f: (item: T) => boolean): T[]
+}
+
+type Filter<T> = 
+{
+    (array: T[], f: (item: T) => boolean): T[]
+}
+
+
+12. In Typescript, class can only extend one base class but can implements more than one interfaces.
+
+Comparing to abstract class, interface doesn't generate javascript code and is only a model.
+Abstract class will generate javascript code
+
+13. type alias and interface are mostly the same
+
+14. Mixin; Typescript can return a anonymous class, like
+return class extends ...
+
+15. Function type
+Declare function:
+
+// Named function
+function greet(name: string):string { return 'hello ' + name
+}
+
+// Function expression
+let greet2 = function(name: string) { return 'hello ' + name
+}
+
+// Arrow function expression
+let greet3 = (name: string) => { return 'hello ' + name
+}
+    // Shorthand arrow function expression
+let greet4 = (name: string) => 'hello ' + name
+    // Function constructor
+let greet5 = new Function('name', 'return "hello " + name')
+
+Function's type/ call signature:
+
+function add(num1: number, num2: number): number
+{
+    return num1 + num2;
+}
+
+function add's signature in typescript:
+(a: number, b: number) => number
+
+16. Node js threading
+reference: https://medium.com/@mohllal/node-js-multithreading-a5cd74958a67
+
+17. Understand promises
+https://nodejs.dev/learn/understanding-javascript-promises
+
+When you create a new Promise, the executor function passed to Promise constructor will be exeucted immediately. Inside the executor, it need to either resolve or reject based on execution result.
+
+resolve(<value>) or reject(<value>)
+
+Here is value is passed to "then" method if you call something like:
+<Promise Object>.then((<value>) => {/*function body*/});
+
+if you await the promise, the returned value from await will be the value passed to resolve/reject
+
+18. If a function is marked async, it always return a Promise even if it doesn't return explicitly. You can even omit the return statement.
+
+const aFunction = async () => {
+  return 'test'
+}
+
+is same as
+
+const aFunction = () => {
+  return Promise.resolve('test')
+}
+
+19. await and async function
+The body of an async function can be thought of as being split by zero or more await expressions. Top-level code, up to and including the first await expression (if there is one), is run synchronously. In this way, an async function without an await expression will run synchronously. If there is an await expression inside the function body, however, the async function will always complete asynchronously.
+
+references: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
+20. Javascript will do async when it is necessary
+example:
+
+function main() {
+  return new Promise( resolve => {
+    console.log(3); // sync
+    resolve(4); // async, send 4 async
+    console.log(5); // sync, executed before console.log(r)
+  });
+}
+
+async function f(){
+    console.log(2); // sync
+    let r = await main(); // partly async
+    console.log(r); // async since after await, recieve 4 after main func is resolved
+}
+
+console.log(1);
+f();
+console.log(6);
+
+Here the whole block of function f is not async. Please check comments;
+The output is:
+1
+2
+3
+5
+6
+// Async happened, await for main()
+4
+
+Notice:
+Even if you await for a promise, the code inside promise callback after resolve/reject will continue execution and finish before the code after await. Check this line "console.log(5)" in previous example.
+
+21. Return value of a promise.then
+references: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
