@@ -34,3 +34,6 @@
 # Typescript
 # Ignore dist folders
 dist/
+
+# Javascript
+node_modules/

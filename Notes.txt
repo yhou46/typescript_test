@@ -202,5 +202,104 @@ The output is:
 Notice:
 Even if you await for a promise, the code inside promise callback after resolve/reject will continue execution and finish before the code after await. Check this line "console.log(5)" in previous example.
 
+To avoid surprises, functions passed to then() will never be called synchronously, even with an already-resolved promise:
+
 21. Return value of a promise.then
 references: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
+
+
+22. Node js Event loop and worker pool
+
+References: https://nodejs.org/en/docs/guides/dont-block-the-event-loop/
+In short, NodeJs has a event loop and a worker pool. Event loop listens to a list of "file descriptor" (file here is not related to files in disk). These "file descriptors" correspond to network sockets, any files it is watching, and so on. When the operating system says that one of these file descriptors is ready, the Event Loop translates it to the appropriate event and invokes the callback(s) associated with that event. If some operations like DNS look up cannot be listened in OS level (For example, they are blocking I/O calls), then these time-consuming calls can be executed in worker thread, which is part of worker pool. When it finishes, it will raise event for Event loop to process the providing callback.
+
+Good talk about event loop and worker pool referenced by node js official site:
+https://www.youtube.com/watch?v=P9csgxBgaZ8
+Slides: https://gist.github.com/sam-github/71d0ebf53a63ab7ca35a1eccc8536e47
+
+Eventloop in details
+References: https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/
+
+
+23. setTimeout, Promise.resolve, process.nextTick, setImmediate
+References: https://nodejs.dev/learn/understanding-process-nexttick
+Every time the event loop takes a full trip, we call it a tick.
+
+nextTick will put callback right after the current tick (current script file)
+
+Promises that resolve before the current function ends will be executed right after the current function.
+
+Calling setTimeout(() => {}, 0) will execute the function at the end of next tick, much later than when using nextTick() which prioritizes the call and executes it just before the beginning of the next tick.
+
+A function passed to process.nextTick() is going to be executed on the current iteration of the event loop, after the current operation ends. This means it will always execute before setTimeout and setImmediate.
+
+A setTimeout() callback with a 0ms delay is very similar to setImmediate(). The execution order will depend on various factors, but they will be both run in the next iteration of the event loop.
+
+Time of execution: A < B means A executed earlier than B, then
+nextTick < Promise.resolve < setTimeout
+
+
+24. Avoid time consuming javascript in callbacks
+References: https://nodejs.org/en/docs/guides/dont-block-the-event-loop/#how-careful-should-you-be
+pay attention to:
+Regular expression: REDOS attack
+Some Node core modules: Encryption, Compression, File system, Child process
+JSON operations like parse or stringify: parse large complex json from client could be a issue
+
+25. Node js EventEmitter
+EventEmitter.emit will call registered handlers synchronously. It just iterates an array of registered handlers and run them one by one.
+
+
+26. super keyword cannot be used to access parent class member variables. To access parent class members, use this keyword. super can be used to access parent class member functions though.
+
+If child class constructor have some member assignment after super(), and super() needs to call member functions that is overriden in child class, which uses the member value assigned after super(), then the value is undefined in super() call since it is not assigned yet. But if the call is in an async block (like after await), the value will be assigned properly since the code after await will be placed after the current event in event loop.
+
+Example:
+abstract class Parent
+{
+    constructor() {
+        this.Init();
+    }
+    public strMember: string = "Parent";
+
+    public abstract Output(): void;
+    public async Init()
+    {
+        console.log("Parent Init function");
+        await new Promise( (resolve) => {
+            setTimeout(() => {
+              resolve("Init promise");
+            }, 2000);
+          });
+        
+        this.Output(); // We will call Output implemented in child class, which uses childMember. If there is no await, then childMember is undefined here
+    }
+}
+
+class Child extends Parent
+{
+    public childMember: string = "child";
+
+    constructor()
+    {
+        super();
+        console.log("after super");
+        this.childMember = "child assigned"; // here childMember is assigned after super()
+    }
+
+    public Output(): void
+    {
+        console.log("Output in child");
+        console.log(this.childMember);
+        //super.Test();
+        //this.Test();
+    }
+
+    public Test(): void
+    {
+        console.log();
+    }
+}
+
+27. Do not create multiple promise all together and then await only one of them. It could lead to unhandeld rejected promise error since other non-awaited promise may reject.
+example: https://stackoverflow.com/questions/67789309/why-do-i-get-an-unhandled-promise-rejection-with-await-promise-all
