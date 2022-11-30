@@ -73,6 +73,7 @@ async function processMessage(socket: socketIoClient.Socket) {
 async function run() {
     console.log("Starting socket io client...");
     let socket = createSocketIoClient();
+    let socket2 = createSocketIoClient();
 }
 
 if (require.main === module) {

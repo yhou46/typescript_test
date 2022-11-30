@@ -186,10 +186,16 @@ function handleError(error) {
 } 
 
 async function run() {
-    console.log(TestEnum.Enum1);
+    console.log("Program start!");
+    process.nextTick(() => {
+        console.log("In next tick");
+    })
+    console.log("After next tick in code");
     
 }
 
 
 
-run();
+if (require.main === module) {
+    run();
+}
