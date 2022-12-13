@@ -62,6 +62,16 @@ async function delay(ms: number) {
     });
 }
 
+async function delayWithCallback(ms: number, callback: () => void) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(() => {
+            console.log("timeout");
+            callback();
+            resolve(`delayed ${ms} milliseconds`);
+        }, ms);
+    });
+}
+
 async function delayAndReject(ms: number) {
     return new Promise(function(resolve, reject) {
         setTimeout(() => {
@@ -186,12 +196,19 @@ function handleError(error) {
 } 
 
 async function run() {
-    console.log("Program start!");
-    process.nextTick(() => {
-        console.log("In next tick");
-    })
-    console.log("After next tick in code");
-    
+    let value = 123;
+
+    await Promise.all([
+        delayWithCallback(1000, () => {
+            ++value;
+            console.log(`delay with 1000ms ${value}`);
+        }),
+        delayWithCallback(2000, () => {
+            ++value;
+            console.log(`delay with 1000ms ${value}`);
+        }),
+    ]);
+
 }
 
 
