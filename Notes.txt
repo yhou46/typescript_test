@@ -150,6 +150,8 @@ Here is value is passed to "then" method if you call something like:
 
 if you await the promise, the returned value from await will be the value passed to resolve/reject
 
+Useful stackoverflow question: https://stackoverflow.com/questions/29963129/is-the-promise-constructor-callback-executed-asynchronously
+
 18. If a function is marked async, it always return a Promise even if it doesn't return explicitly. You can even omit the return statement.
 
 const aFunction = async () => {
