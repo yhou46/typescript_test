@@ -17,6 +17,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "acorn": "^7.4.1",
     "acorn-jsx": "^5.3.1",
     "ajv": "^6.12.6",
@@ -76,6 +77,7 @@
     "imurmurhash": "^0.1.4",
     "inflight": "^1.0.6",
     "inherits": "^2.0.4",
+    "ioredis": "^5.6.0",
     "is-extglob": "^2.1.1",
     "is-fullwidth-code-point": "^3.0.0",
     "is-glob": "^4.0.1",

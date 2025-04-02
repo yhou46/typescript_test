@@ -37,3 +37,6 @@ dist/
 
 # Javascript
 node_modules/
+
+# Customized files
+*.secret.json

@@ -2,19 +2,23 @@ import * as socketIoClient from "socket.io-client"
 import { SocketIoMessage, SocketIoMessageOperation } from "./socketio_server_test"
 import * as uuid from "uuid"
 import * as readline from "readline"
+import * as nconf from "nconf";
 
-function createSocketIoClient(): socketIoClient.Socket {
-    const socket = socketIoClient.io("ws://localhost:3000");
+function createSocketIoClient(port: number): socketIoClient.Socket {
+    const socket = socketIoClient.io(`ws://localhost:${port}`);
 
     // Attach event handler
     socket.on("connect", () => {
         console.log(`Socket connected with socket id: ${socket.id}`);
-
         processMessage(socket);
     });
 
     socket.on("op", (message: SocketIoMessage) => {
         console.log(`Client#${socket.id}: Received message from server: ${JSON.stringify(message)}`);
+    });
+
+    socket.on("test", (message: string) => {
+        console.log(`Client#${socket.id}: Received message from server: ${message}`);
     });
 
     return socket;
@@ -71,9 +75,13 @@ async function processMessage(socket: socketIoClient.Socket) {
 }
 
 async function run() {
+    // Configure nconf to parse command-line arguments and environment variables
+    nconf.argv().env().defaults({
+        port: 3000, // Default port if not provided
+    });
     console.log("Starting socket io client...");
-    let socket = createSocketIoClient();
-    let socket2 = createSocketIoClient();
+    const port = nconf.get("port");
+    let socket = createSocketIoClient(port);
 }
 
 if (require.main === module) {
